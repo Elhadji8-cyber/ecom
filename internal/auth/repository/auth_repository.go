@@ -9,6 +9,7 @@ import (
 type AuthRepository interface {
 	CreateCustomer(customer *models.Customer) error
 	FindByEmail(email string) (*models.Customer, error)
+	UpdatePassword(email string, newHash string) error
 }
 
 type authRepository struct {
@@ -30,4 +31,8 @@ func (r *authRepository) FindByEmail(email string) (*models.Customer, error) {
 		return nil, err
 	}
 	return &customer, nil
+}
+
+func (r *authRepository) UpdatePassword(email string, newHash string) error {
+	return r.db.Model(&models.Customer{}).Where("email = ?", email).Update("password_hash", newHash).Error
 }

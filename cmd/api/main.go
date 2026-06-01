@@ -32,14 +32,19 @@ func main() {
 	// Initialize Service
 	authSvc := service.NewAuthService(authRepo, pwdSvc, jwtSvc)
 
-	// Initialize Handler
-	authHandler := handler.NewAuthHandler(authSvc)
+	// Initialize Handlers
+	handlers := routes.AuthHandlers{
+		Register:       handler.NewRegisterHandler(authSvc),
+		Login:          handler.NewLoginHandler(authSvc),
+		ForgotPassword: handler.NewForgotPasswordHandler(authSvc),
+		RefreshToken:   handler.NewRefreshTokenHandler(authSvc),
+	}
 
 	// Initialize Router
 	router := gin.Default()
 
 	// Register Routes
-	routes.RegisterAuthRoutes(router, authHandler)
+	routes.RegisterAuthRoutes(router, handlers)
 
 	// Start Server
 	log.Println("Server starting on :8080")

@@ -13,14 +13,12 @@ The project follows the **Handler-Service-Repository** pattern:
 - **Repositories**: Handles direct database interactions using GORM.
 - **Config**: Database connection and environment setup.
 
-## Authentication Flow
+## Authentication Endpoints
 
-1.  **Register**: `POST /auth/register`
-    - Hashes password using bcrypt.
-    - Saves customer to PostgreSQL.
-2.  **Login**: `POST /auth/login`
-    - Validates email and password.
-    - Generates a JWT token signed with HMAC-SHA256.
+- **Register**: `POST /auth/register`
+- **Login**: `POST /auth/login`
+- **Forgot Password**: `POST /auth/forgot-password`
+- **Refresh Token**: `POST /auth/refresh-token`
 
 ## Getting Started
 
