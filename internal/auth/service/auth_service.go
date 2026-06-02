@@ -6,6 +6,7 @@ import (
 	"server/internal/auth/dto"
 	"server/internal/auth/models"
 	"server/internal/auth/repository"
+	"server/internal/auth/validator"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -22,17 +23,26 @@ type authService struct {
 	repo            repository.AuthRepository
 	passwordService PasswordService
 	jwtService      JwtService
+	validator       validator.AuthValidator
 }
 
-func NewAuthService(repo repository.AuthRepository, pwdSvc PasswordService, jwtSvc JwtService) AuthService {
+func NewAuthService(repo repository.AuthRepository, pwdSvc PasswordService, jwtSvc JwtService, val validator.AuthValidator) AuthService {
 	return &authService{
 		repo:            repo,
 		passwordService: pwdSvc,
 		jwtService:      jwtSvc,
+		validator:       val,
 	}
 }
 
 func (s *authService) Register(req dto.RegisterRequest) error {
+	if err := s.validator.ValidateEmail(req.Email); err != nil {
+		return err
+	}
+	if err := s.validator.ValidatePassword(req.Password); err != nil {
+		return err
+	}
+
 	existing, _ := s.repo.FindByEmail(req.Email)
 	if existing != nil {
 		return errors.New("email already registered")
@@ -74,6 +84,10 @@ func (s *authService) Login(req dto.LoginRequest) (*dto.AuthResponse, error) {
 }
 
 func (s *authService) ForgotPassword(email string) error {
+	if err := s.validator.ValidateEmail(email); err != nil {
+		return err
+	}
+
 	customer, err := s.repo.FindByEmail(email)
 	if err != nil {
 		return errors.New("if an account with that email exists, we have sent a reset link")

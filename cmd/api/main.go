@@ -6,6 +6,7 @@ import (
 	"server/internal/auth/repository"
 	"server/internal/auth/routes"
 	"server/internal/auth/service"
+	"server/internal/auth/validator"
 	"server/internal/config"
 
 	"github.com/gin-gonic/gin"
@@ -25,12 +26,13 @@ func main() {
 	// Initialize Services
 	pwdSvc := service.NewPasswordService()
 	jwtSvc := service.NewJwtService()
+	authVal := validator.NewAuthValidator()
 
 	// Initialize Repository
 	authRepo := repository.NewAuthRepository(config.DB)
 
 	// Initialize Service
-	authSvc := service.NewAuthService(authRepo, pwdSvc, jwtSvc)
+	authSvc := service.NewAuthService(authRepo, pwdSvc, jwtSvc, authVal)
 
 	// Initialize Handlers
 	handlers := routes.AuthHandlers{
