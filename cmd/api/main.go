@@ -2,12 +2,16 @@ package main
 
 import (
 	"log"
-	"server/internal/auth/handler"
-	"server/internal/auth/repository"
-	"server/internal/auth/routes"
-	"server/internal/auth/service"
-	"server/internal/auth/validator"
+	authHandler "server/internal/auth/handler"
+	authRepo "server/internal/auth/repository"
+	authRoutes "server/internal/auth/routes"
+	authService "server/internal/auth/service"
+	authValidator "server/internal/auth/validator"
 	"server/internal/config"
+	productHandler "server/internal/product/handler"
+	productRepo "server/internal/product/repository"
+	productRoutes "server/internal/product/routes"
+	productService "server/internal/product/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -23,30 +27,30 @@ func main() {
 	// Initialize Database
 	config.ConnectDatabase()
 
-	// Initialize Services
-	pwdSvc := service.NewPasswordService()
-	jwtSvc := service.NewJwtService()
-	authVal := validator.NewAuthValidator()
-
-	// Initialize Repository
-	authRepo := repository.NewAuthRepository(config.DB)
-
-	// Initialize Service
-	authSvc := service.NewAuthService(authRepo, pwdSvc, jwtSvc, authVal)
-
-	// Initialize Handlers
-	handlers := routes.AuthHandlers{
-		Register:       handler.NewRegisterHandler(authSvc),
-		Login:          handler.NewLoginHandler(authSvc),
-		ForgotPassword: handler.NewForgotPasswordHandler(authSvc),
-		RefreshToken:   handler.NewRefreshTokenHandler(authSvc),
+	// Initialize Auth Components
+	authPwdSvc := authService.NewPasswordService()
+	authJwtSvc := authService.NewJwtService()
+	authVal := authValidator.NewAuthValidator()
+	aRepo := authRepo.NewAuthRepository(config.DB)
+	aService := authService.NewAuthService(aRepo, authPwdSvc, authJwtSvc, authVal)
+	aHandlers := authRoutes.AuthHandlers{
+		Register:       authHandler.NewRegisterHandler(aService),
+		Login:          authHandler.NewLoginHandler(aService),
+		ForgotPassword: authHandler.NewForgotPasswordHandler(aService),
+		RefreshToken:   authHandler.NewRefreshTokenHandler(aService),
 	}
+
+	// Initialize Product Components
+	pRepo := productRepo.NewProductRepository(config.DB)
+	pService := productService.NewProductService(pRepo)
+	pHandler := productHandler.NewProductHandler(pService)
 
 	// Initialize Router
 	router := gin.Default()
 
 	// Register Routes
-	routes.RegisterAuthRoutes(router, handlers)
+	authRoutes.RegisterAuthRoutes(router, aHandlers)
+	productRoutes.RegisterProductRoutes(router, pHandler)
 
 	// Start Server
 	log.Println("Server starting on :8080")

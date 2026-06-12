@@ -5,7 +5,8 @@ import (
 	"log"
 	"os"
 
-	"server/internal/auth/models"
+	authModels "server/internal/auth/models"
+	productModels "server/internal/product/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -30,7 +31,11 @@ func ConnectDatabase() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	err = database.AutoMigrate(&models.Customer{})
+	err = database.AutoMigrate(
+		&authModels.Customer{},
+		&productModels.Category{},
+		&productModels.Product{},
+	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}
